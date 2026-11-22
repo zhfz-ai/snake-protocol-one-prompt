@@ -8,9 +8,19 @@ const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 // Outside the grader, MAKEFUN_BOT_DIR / MAKEFUN_OUTPUT_DIR stand in for /bot and /output.
 
 mkdirSync(outputDir, { recursive: true });
-chmodSync(outputDir, 0o755);
+// Best-effort only: in the grader sandbox /output is owned by another user,
+// so chmod can throw PermissionError. Never let that fail the run.
+try {
+  chmodSync(outputDir, 0o755);
+} catch {
+  // ignore: permissions are advisory here
+}
 const sourcePath = join(botDir, 'POST.json');
 const targetPath = join(outputDir, 'POST.json');
 copyFileSync(sourcePath, targetPath);
-chmodSync(targetPath, 0o644);
+try {
+  chmodSync(targetPath, 0o644);
+} catch {
+  // ignore: permissions are advisory here
+}
 console.log(`POST.json copied to ${targetPath}`);
